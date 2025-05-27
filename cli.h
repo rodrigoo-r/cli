@@ -62,6 +62,12 @@ inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
     parsed_args.arrays = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
 
     // Check if the hashmaps were created successfully
+    if (!parsed_args.statics || !parsed_args.strings || !parsed_args.integers ||
+        !parsed_args.floats || !parsed_args.arrays)
+    {
+        parsed_args.success = 0; // Set success to false if any hashmap creation failed
+        return parsed_args;
+    }
 
     // Used to keep track of the parsing status
     // Iterate through the command-line arguments
