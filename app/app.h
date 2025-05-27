@@ -75,12 +75,25 @@ inline unsigned int cli_new_app(cli_app_t *app)
  * @param flag_name Name of the flag to insert.
  * @param value Pointer to the value associated with the flag.
  */
-inline void insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t *value)
+inline int insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t *value)
 {
     if (app && app->flags && flag_name && value)
     {
+        // Check if the name already exists in the hashmaps
+        if (
+            hashmap_get(app->flags, (void *)flag_name) != NULL
+            || hashmap_get(app->commands, (void *)flag_name) != NULL
+        )
+        {
+            // Handle the case where the flag already exists
+            return 0; // Flag already exists, do not insert again
+        }
+
         hashmap_insert(app->flags, (void *)flag_name, value);
+        return 1; // Successfully inserted the flag
     }
+
+    return 0; // Invalid parameters, insertion failed
 }
 
 /**
@@ -92,12 +105,25 @@ inline void insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t
  * @param command_name Name of the command to insert.
  * @param value Pointer to the value associated with the command.
  */
-inline void insert_command(const cli_app_t *app, const char *command_name, cli_value_t *value)
+inline int insert_command(const cli_app_t *app, const char *command_name, cli_value_t *value)
 {
     if (app && app->commands && command_name && value)
     {
+        // Check if the name already exists in the hashmaps
+        if (
+            hashmap_get(app->flags, (void *)command_name) != NULL
+            || hashmap_get(app->commands, (void *)command_name) != NULL
+        )
+        {
+            // Handle the case where the command already exists
+            return 0; // Flag already exists, do not insert again
+        }
+
         hashmap_insert(app->commands, (void *)command_name, value);
+        return 1; // Successfully inserted the command
     }
+
+    return 0; // Invalid parameters, insertion failed
 }
 
 #endif //FLUENT_LIBC_CLI_APP_H

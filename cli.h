@@ -50,9 +50,25 @@ typedef struct
     hashmap_t *arrays;    /**< Array flags/commands */
 } argv_t;
 
-inline argv_t parse_argv(int argc, char **argv, cli_app_t *app)
+inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
 {
-    // TODO!
+    // Define the structure to hold parsed command-line arguments
+    argv_t parsed_args;
+    parsed_args.success = 1; // Assume success initially
+    parsed_args.statics = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
+    parsed_args.strings = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
+    parsed_args.integers = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
+    parsed_args.floats = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
+    parsed_args.arrays = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
+
+    // Check if the hashmaps were created successfully
+
+    // Used to keep track of the parsing status
+    // Iterate through the command-line arguments
+    for (int i = 0; i < argc; i++)
+    {
+        char *arg = argv[i];
+    }
 }
 
 /*// ============= FLUENT LIB C++ =============
