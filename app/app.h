@@ -25,6 +25,7 @@
 #   include <fluent/hashmap/hashmap.h> // fluent_libc
 #   include <fluent/vector/vector.h> // fluent_libc
 #endif
+#include "../value/value.h"
 
 /**
  * @brief Represents the state and configuration of the CLI application.
@@ -63,6 +64,40 @@ inline unsigned int cli_new_app(cli_app_t *app)
     }
 
     return 1; // Successfully created the CLI application
+}
+
+/**
+ * @brief Inserts a flag into the CLI application's flags hashmap.
+ *
+ * Adds a new flag and its associated value to the application's flags.
+ *
+ * @param app Pointer to the CLI application state.
+ * @param flag_name Name of the flag to insert.
+ * @param value Pointer to the value associated with the flag.
+ */
+inline void insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t *value)
+{
+    if (app && app->flags && flag_name && value)
+    {
+        hashmap_insert(app->flags, (void *)flag_name, value);
+    }
+}
+
+/**
+ * @brief Inserts a command into the CLI application's commands hashmap.
+ *
+ * Adds a new command and its associated value to the application's commands.
+ *
+ * @param app Pointer to the CLI application state.
+ * @param command_name Name of the command to insert.
+ * @param value Pointer to the value associated with the command.
+ */
+inline void insert_command(const cli_app_t *app, const char *command_name, cli_value_t *value)
+{
+    if (app && app->commands && command_name && value)
+    {
+        hashmap_insert(app->commands, (void *)command_name, value);
+    }
 }
 
 #endif //FLUENT_LIBC_CLI_APP_H
