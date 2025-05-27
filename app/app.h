@@ -33,36 +33,31 @@
  * arguments, flags, and suggestions in the CLI.
  *
  * Members:
- *   statics     - Hashmap of static (boolean) flags.
- *   strings     - Hashmap of string flags/commands.
- *   integers    - Hashmap of integer flags/commands.
- *   floats      - Hashmap of float flags/commands.
- *   arrays      - Hashmap of array flags/commands.
- *   tree        - Pointer to the root of the command suggestion tree.
+ *   flags      - A hashmap containing static (boolean) flags.
+ *   commands   - A hashmap containing commands and their associated data.
  */
 typedef struct
 {
-    hashmap_t *statics;   /**< Static (boolean) flags */
-    hashmap_t *strings;   /**< String flags/commands */
-    hashmap_t *integers;  /**< Integer flags/commands */
-    hashmap_t *floats;    /**< Float flags/commands */
-    hashmap_t *arrays;    /**< Array flags/commands */
+    hashmap_t *flags; /**< Flags */
+    hashmap_t *commands; /**< Commands */
 } cli_app_t;
 
+/**
+ * @brief Initializes a new CLI application state.
+ *
+ * Allocates and initializes the internal hashmaps for flags and commands
+ * in the provided `cli_app_t` structure.
+ *
+ * @param app Pointer to a `cli_app_t` structure to initialize.
+ * @return 1 on success, 0 if memory allocation fails.
+ */
 inline unsigned int cli_new_app(cli_app_t *app)
 {
-    app->statics = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
-    app->strings = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
-    app->integers = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
-    app->floats = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
-    app->arrays = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
+    app->flags = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
+    app->commands = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
 
     // Handle memory allocation failure
-    if (
-        !app->statics ||
-        !app->strings || !app->integers ||
-        !app->floats || !app->arrays
-    )
+    if (!app->flags || !app->commands)
     {
         return 0; // Memory allocation failed
     }
