@@ -27,10 +27,10 @@
 #include "../type/type.h"
 
 /**
- * @struct cli_flag_t
- * @brief Represents a command-line flag.
+ * @struct cli_value_t
+ * @brief Represents a command-line flag or command.
  *
- * This structure holds information about a command-line flag, including its name,
+ * This structure holds information about a command-line flag or command, including its name,
  * description, type, and value. The value is stored as a pointer and should be
  * interpreted according to the flag's type.
  *
@@ -42,13 +42,12 @@
 typedef struct
 {
     char *description;   /**< Description of the flag */
-    cli_type_t type;     /**< Type of the flag (static, string, integer, float, array) */
-    void *value;         /**< Pointer to the value of the flag */
-} cli_flag_t;
+    cli_type_t type;     /**< Type of the command (static, string, integer, float, array) */
+} cli_value_t;
 
 /**
- * @struct cli_i_flag_t
- * @brief Represents the internal value(s) of a parsed command-line flag.
+ * @struct cli_i_value_t
+ * @brief Represents the internal value(s) of a parsed command-line flag or command.
  *
  * This structure is used to store the parsed value(s) of a command-line flag or command.
  * It supports multiple types of values, including string, array, integer, and float.
@@ -61,10 +60,10 @@ typedef struct
  */
 typedef struct
 {
-    char *value;           /**< Pointer to the value of the flag (might be NULL) */
+    char *value;           /**< Pointer to the value of the command (might be NULL) */
     vector_t *vec_value;   /**< Vector of values for array flags/command (might be NULL) */
     size_t num_val;        /**< Value for integer flags/commands (might be 0) */
     float float_val;       /**< Value for float flags/commands (might be 0.0) */
-} cli_i_flag_t;
+} cli_i_value_t;
 
 #endif //FLUENT_LIBC_CLI_FLAG_H

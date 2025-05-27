@@ -23,7 +23,7 @@ project(cli C)
 set(CMAKE_C_STANDARD 11)
 
 add_library(cli STATIC cli.c
-        flag/flag.h
+        value/value.h
         type/type.h
         app/app.h)
 target_include_directories(cli PRIVATE ${CMAKE_BINARY_DIR}/_deps/hashmap-src)
