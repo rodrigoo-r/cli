@@ -18,6 +18,7 @@
 #else
 #   include <fluent/hashmap/hashmap.h> // fluent_libc
 #endif
+#include "app/app.h"
 
 /*// ============= FLUENT LIB C++ =============
 #if defined(__cplusplus)
@@ -32,6 +33,7 @@ extern "C"
  * for efficient access and management.
  *
  * Members:
+ *   success   - Indicates if parsing was successful (1 for success, 0 for failure).
  *   statics   - Hashmap of static (boolean) flags.
  *   strings   - Hashmap of string flags or commands.
  *   integers  - Hashmap of integer flags or commands.
@@ -40,12 +42,18 @@ extern "C"
  */
 typedef struct
 {
+    int success;          /**< Indicates if parsing was successful */
     hashmap_t *statics;   /**< Static (boolean) flags */
     hashmap_t *strings;   /**< String flags/commands */
     hashmap_t *integers;  /**< Integer flags/commands */
     hashmap_t *floats;    /**< Float flags/commands */
     hashmap_t *arrays;    /**< Array flags/commands */
 } argv_t;
+
+inline argv_t parse_argv(int argc, char **argv, cli_app_t *app)
+{
+    // TODO!
+}
 
 /*// ============= FLUENT LIB C++ =============
 #if defined(__cplusplus)

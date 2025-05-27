@@ -22,7 +22,10 @@ project(cli C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_library(cli STATIC cli.c)
+add_library(cli STATIC cli.c
+        flag/flag.h
+        type/type.h
+        app/app.h)
 target_include_directories(cli PRIVATE ${CMAKE_BINARY_DIR}/_deps/hashmap-src)
 target_link_libraries(cli PRIVATE hashmap)
 target_include_directories(cli PRIVATE ${CMAKE_BINARY_DIR}/_deps/vector-src)
