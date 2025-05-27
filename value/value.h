@@ -41,8 +41,9 @@
  */
 typedef struct
 {
-    char *description;   /**< Description of the flag */
-    cli_type_t type;     /**< Type of the command (static, string, integer, float, array) */
+    char *description;   /**< Description of the flag/command */
+    cli_type_t type;     /**< Type of the flag/command (static, string, integer, float, array) */
+    char *alias;         /**< Alias for the flag/command (may be NULL) */
 } cli_value_t;
 
 /**
