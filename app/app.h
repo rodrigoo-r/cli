@@ -67,6 +67,30 @@ inline unsigned int cli_new_app(cli_app_t *app)
 }
 
 /**
+ * @brief Checks if a given name exists in the CLI application's flags or commands.
+ *
+ * This function searches for the specified name in both the flags and commands
+ * hashmaps of the provided CLI application state. It returns non-zero if the
+ * name is found in either hashmap, and zero otherwise.
+ *
+ * @param app Pointer to the CLI application state.
+ * @param name The name to search for in the flags and commands.
+ * @return Non-zero if the name exists, zero otherwise.
+ */
+static int cli_has_value(const cli_app_t *app, const char *name)
+{
+    if (app->flags && name)
+    {
+        // Check if the name exists in the flags or commands hashmaps
+        return
+            hashmap_get(app->flags, (void *)name) != NULL
+            || hashmap_get(app->commands, (void *)name) != NULL;
+    }
+
+    return 0; // Invalid parameters, return false
+}
+
+/**
  * @brief Inserts a flag into the CLI application's flags hashmap.
  *
  * Adds a new flag and its associated value to the application's flags.
@@ -75,21 +99,33 @@ inline unsigned int cli_new_app(cli_app_t *app)
  * @param flag_name Name of the flag to insert.
  * @param value Pointer to the value associated with the flag.
  */
-inline int insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t *value)
+inline int cli_insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t *value)
 {
     if (app && app->flags && flag_name && value)
     {
         // Check if the name already exists in the hashmaps
-        if (
-            hashmap_get(app->flags, (void *)flag_name) != NULL
-            || hashmap_get(app->commands, (void *)flag_name) != NULL
-        )
+        if (cli_has_value(app, flag_name))
         {
             // Handle the case where the flag already exists
             return 0; // Flag already exists, do not insert again
         }
 
+        // Insert the flag into the hashmap
         hashmap_insert(app->flags, (void *)flag_name, value);
+
+        // Insert the alias if it exists
+        if (value->alias)
+        {
+            // Check if the alias already exists in the hashmaps
+            if (cli_has_value(app, value->alias))
+            {
+                // Handle the case where the alias already exists
+                return 0; // Alias already exists, do not insert again
+            }
+
+            // Insert the alias into the hashmap
+            hashmap_insert(app->flags, (void *)value->alias, value);
+        }
         return 1; // Successfully inserted the flag
     }
 
@@ -105,21 +141,34 @@ inline int insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t 
  * @param command_name Name of the command to insert.
  * @param value Pointer to the value associated with the command.
  */
-inline int insert_command(const cli_app_t *app, const char *command_name, cli_value_t *value)
+inline int cli_insert_command(const cli_app_t *app, const char *command_name, cli_value_t *value)
 {
     if (app && app->commands && command_name && value)
     {
         // Check if the name already exists in the hashmaps
-        if (
-            hashmap_get(app->flags, (void *)command_name) != NULL
-            || hashmap_get(app->commands, (void *)command_name) != NULL
-        )
+        if (cli_has_value(app, command_name))
         {
             // Handle the case where the command already exists
             return 0; // Flag already exists, do not insert again
         }
 
+        // Insert the command into the hashmap
         hashmap_insert(app->commands, (void *)command_name, value);
+
+        // Insert the alias if it exists
+        if (value->alias)
+        {
+            // Check if the alias already exists in the hashmaps
+            if (cli_has_value(app, value->alias))
+            {
+                // Handle the case where the alias already exists
+                return 0; // Alias already exists, do not insert again
+            }
+
+            // Insert the alias into the hashmap
+            hashmap_insert(app->commands, (void *)value->alias, value);
+        }
+
         return 1; // Successfully inserted the command
     }
 
