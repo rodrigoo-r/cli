@@ -19,6 +19,12 @@
 #ifndef FLUENT_LIBC_CLI_FLAG_H
 #define FLUENT_LIBC_CLI_FLAG_H
 
+// ============= FLUENT LIB C++ =============
+#if defined(__cplusplus)
+extern "C"
+{
+#endif
+
 #ifndef FLUENT_LIBC_RELEASE
 #   include <vector.h> // fluent_libc
 #else
@@ -89,5 +95,10 @@ inline cli_value_t cli_new_value(const char *name, const char *description, cons
 
     return value; // Return the initialized value
 }
+
+// ============= FLUENT LIB C++ =============
+#if defined(__cplusplus)
+}
+#endif
 
 #endif //FLUENT_LIBC_CLI_FLAG_H
