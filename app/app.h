@@ -18,6 +18,13 @@
 
 #ifndef FLUENT_LIBC_CLI_APP_H
 #define FLUENT_LIBC_CLI_APP_H
+
+// ============= FLUENT LIB C++ =============
+#if defined(__cplusplus)
+extern "C"
+{
+#endif
+
 #ifndef FLUENT_LIBC_RELEASE
 #   include <hashmap.h> // fluent_libc
 #   include <vector.h> // fluent_libc
@@ -174,5 +181,10 @@ inline int cli_insert_command(const cli_app_t *app, const char *command_name, cl
 
     return 0; // Invalid parameters, insertion failed
 }
+
+// ============= FLUENT LIB C++ =============
+#if defined(__cplusplus)
+}
+#endif
 
 #endif //FLUENT_LIBC_CLI_APP_H
