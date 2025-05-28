@@ -12,8 +12,15 @@ FetchContent_Declare(
         GIT_TAG        master
 )
 
+FetchContent_Declare(
+        atoi
+        GIT_REPOSITORY https://github.com/rodrigoo-r/atoi
+        GIT_TAG        master
+)
+
 FetchContent_MakeAvailable(hashmap)
 FetchContent_MakeAvailable(vector)
+FetchContent_MakeAvailable(atoi)
 
 cmake_minimum_required(VERSION 3.30)
 project(cli C)
@@ -28,3 +35,5 @@ target_include_directories(cli PRIVATE ${CMAKE_BINARY_DIR}/_deps/hashmap-src)
 target_link_libraries(cli PRIVATE hashmap)
 target_include_directories(cli PRIVATE ${CMAKE_BINARY_DIR}/_deps/vector-src)
 target_link_libraries(cli PRIVATE vector)
+target_include_directories(cli PRIVATE ${CMAKE_BINARY_DIR}/_deps/atoi-src)
+target_link_libraries(cli PRIVATE atoi)
