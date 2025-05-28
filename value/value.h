@@ -64,7 +64,7 @@ typedef struct
  */
 typedef struct
 {
-    char *value;           /**< Pointer to the value of the command (might be NULL) */
+    const char *value;           /**< Pointer to the value of the command (might be NULL) */
     vector_t *vec_value;   /**< Vector of values for array flags/command (might be NULL) */
     size_t num_val;        /**< Value for integer flags/commands (might be 0) */
     float float_val;       /**< Value for float flags/commands (might be 0.0) */
