@@ -427,12 +427,15 @@ inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
             if (parsing_array)
             {
                 // Process the array command
-                if (!argv_t_process_array(
+                if (
+                    !argv_t_process_array(
                         &parsed_args,
                         &command,
                         &array_values,
                         &parsing_array,
-                        &waiting_value))
+                        &waiting_value
+                    )
+                )
                 {
                     // Handle failure in processing the array
                     parsed_args.success = 0; // Set success to false if array processing failed
