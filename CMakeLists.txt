@@ -6,8 +6,6 @@ FetchContent_Declare(
         GIT_TAG        master
 )
 
-FetchContent_MakeAvailable(hashmap)
-
 FetchContent_Declare(
         vector
         GIT_REPOSITORY https://github.com/rodrigoo-r/vector
