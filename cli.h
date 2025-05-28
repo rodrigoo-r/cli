@@ -34,6 +34,10 @@
 //         cli_app_t app = ...; // Define CLI structure
 //         argv_t args = parse_argv(argc, argv, &app);
 //
+// destroy_argv:     Frees memory associated with an argv_t struct
+//     Example:
+//         destroy_argv(&args); // Free parsed arguments
+//
 // Structure Details:
 // ----------------------------------------
 // typedef struct
@@ -500,6 +504,80 @@ inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
     // Update the command value
     parsed_args.command = command;
     return parsed_args;
+}
+
+/**
+ * @brief Frees all memory associated with a hashmap of CLI values.
+ *
+ * Iterates through all entries in the given hashmap, freeing any dynamically allocated
+ * `cli_i_value_t` values, including their associated vectors if present. Finally,
+ * frees the hashmap itself.
+ *
+ * @param map Pointer to the hashmap to be destroyed. If NULL, the function does nothing.
+ */
+static void destroy_argv_map(hashmap_t *map)
+{
+    if (!map) return;
+
+    // Get an iterator for the hashmap
+    hashmap_iter_t iter = hashmap_iter_begin(map);
+    hash_entry_t* entry;
+
+    // Iterate through the hashmap entries
+    while ((entry = hashmap_iter_next(&iter)) != NULL)
+    {
+        // Get the value from the entry
+        cli_i_value_t *value = (cli_i_value_t *)entry->value;
+        if (value == NULL)
+        {
+            continue; // Skip if the value is NULL
+        }
+
+        // Check if we have a vector
+        if (value->vec_value)
+        {
+            // Destroy the vector and free its memory
+            vec_destroy(value->vec_value, NULL);
+            free(value->vec_value);
+        }
+
+        // Free the value itself
+        free(value);
+    }
+
+    hashmap_free(map); // Free the hashmap itself
+}
+
+/**
+ * @brief Frees all memory associated with an argv_t struct.
+ *
+ * This function releases all dynamically allocated memory used by the hashmaps
+ * in the given argv_t struct, as well as any vector associated with the command value.
+ * After freeing, it resets the success flag to 0.
+ *
+ * @param args Pointer to the argv_t struct to be destroyed. If NULL, the function does nothing.
+ */
+inline void destroy_argv(argv_t *args)
+{
+    if (args)
+    {
+        // Free the hashmaps
+        destroy_argv_map(args->statics);
+        destroy_argv_map(args->strings);
+        destroy_argv_map(args->integers);
+        destroy_argv_map(args->floats);
+        destroy_argv_map(args->arrays);
+
+        // Free the command value if it has a vector
+        if (args->command.vec_value)
+        {
+            vec_destroy(args->command.vec_value, NULL);
+            free(args->command.vec_value);
+        }
+
+        // Reset the success flag
+        args->success = 0;
+    }
 }
 
 // ============= FLUENT LIB C++ =============
