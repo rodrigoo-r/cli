@@ -15,16 +15,18 @@
 #define FLUENT_LIBC_CLI_LIBRARY_H
 #ifndef FLUENT_LIBC_RELEASE
 #   include <hashmap.h> // fluent_libc
+#   include <atoi.h> // fluent_libc
 #else
 #   include <fluent/hashmap/hashmap.h> // fluent_libc
+#   include <fluent/atoi/atoi.h> // fluent_libc
 #endif
 #include "app/app.h"
 
-/*// ============= FLUENT LIB C++ =============
+// ============= FLUENT LIB C++ =============
 #if defined(__cplusplus)
 extern "C"
 {
-#endif*/
+#endif
 
 /**
  * @brief Structure to hold parsed command-line arguments.
@@ -42,18 +44,52 @@ extern "C"
  */
 typedef struct
 {
-    int success;          /**< Indicates if parsing was successful */
-    hashmap_t *statics;   /**< Static (boolean) flags */
-    hashmap_t *strings;   /**< String flags/commands */
-    hashmap_t *integers;  /**< Integer flags/commands */
-    hashmap_t *floats;    /**< Float flags/commands */
-    hashmap_t *arrays;    /**< Array flags/commands */
+    int success;            /**< Indicates if parsing was successful */
+    cli_i_value_t command;  /**< Command value */
+    hashmap_t *statics;     /**< Static (boolean) flags */
+    hashmap_t *strings;     /**< String flags */
+    hashmap_t *integers;    /**< Integer flags */
+    hashmap_t *floats;      /**< Float flags */
+    hashmap_t *arrays;      /**< Array flags */
 } argv_t;
+
+static int argv_t_process_array(
+    argv_t *parsed_args,
+    const cli_i_value_t *command,
+    vector_t **array_values,
+    int *parsing_array,
+    int *waiting_value
+)
+{
+    // If the flag is an array, initialize the array values vector
+    vector_t *vector = (vector_t *)malloc(sizeof(vector_t));
+
+    // Handle memory allocation failure
+    if (vector == NULL)
+    {
+        parsed_args->success = 0; // Set success to false if vector creation failed
+        parsed_args->command = *command;
+        return 0;
+    }
+
+    vec_init(vector, 10, sizeof(char *), 1.5); // Initialize vector with capacity of 10
+
+    *array_values = vector; // Assign the vector to array_values
+    *parsing_array = 1; // Set parsing array flag
+    *waiting_value = 1; // Set waiting value flag
+    return 1;
+}
 
 inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
 {
     // Define the structure to hold parsed command-line arguments
     argv_t parsed_args;
+    cli_i_value_t command;
+    command.float_val = 0.0f; // Initialize float value to 0.0
+    command.num_val = 0;      // Initialize integer value to 0
+    command.value = NULL;     // Initialize string value to NULL
+    command.vec_value = NULL; // Initialize vector value to NULL
+
     parsed_args.success = 1; // Assume success initially
     parsed_args.statics = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
     parsed_args.strings = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
@@ -66,20 +102,320 @@ inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
         !parsed_args.floats || !parsed_args.arrays)
     {
         parsed_args.success = 0; // Set success to false if any hashmap creation failed
+        parsed_args.command = command;
         return parsed_args;
     }
 
     // Used to keep track of the parsing status
+    int waiting_value = 0;
+    int parsing_command = 0;
+    int parsing_array = 0;
+    vector_t *array_values = NULL;
+    cli_type_t last_type = CLI_TYPE_STATIC; // Initialize last type to static
+    cli_type_t command_type = CLI_TYPE_STATIC;
+    const char *flag_name = NULL;
+    const char *command_name = NULL;
+
     // Iterate through the command-line arguments
     for (int i = 0; i < argc; i++)
     {
-        char *arg = argv[i];
+        // Get the current argument
+        const char *arg = argv[i];
+
+        // Check if the argument is a flag (starts with '-')
+        if (arg[0] == '-')
+        {
+            // Check if we are waiting for a value
+            if (waiting_value && !parsing_array)
+            {
+                // Handle failure
+                parsed_args.success = 0; // Set success to false if we were waiting for a value
+                parsed_args.command = command;
+                return parsed_args;
+            }
+
+            // Handle the case where we are parsing an array
+            if (waiting_value && parsing_array)
+            {
+                // Handle failure
+                parsed_args.success = 0;
+                return parsed_args;
+            }
+
+            parsing_array = 0; // Reset parsing array flag
+            // Check if we have a long flag
+            if (arg[1] == '-')
+            {
+                // Update the flag name to the long flag
+                flag_name = arg + 2; // Skip the '--'
+            } else if (arg[1] == '\0') // Handle unexpected single dash
+            {
+                parsed_args.success = 0; // Set success to false if a single dash is found
+                parsed_args.command = command;
+                return parsed_args;
+            } else
+            {
+                // Update the flag name to the short flag
+                flag_name = arg + 1; // Skip the '-'
+
+                // Handle unexpected values
+                if (flag_name[0] == '\0')
+                {
+                    parsed_args.success = 0; // Set success to false if an empty flag is found
+                    parsed_args.command = command;
+                    return parsed_args;
+                }
+            }
+
+            // Get the flag from the flag map
+            const cli_value_t *flag = (cli_value_t *)hashmap_get(app->flags, (void *)flag_name);
+
+            // Check if the flag exists
+            if (flag == NULL)
+            {
+                // If the flag does not exist, set success to false and return
+                parsed_args.success = 0;
+                parsed_args.command = command;
+                return parsed_args;
+            }
+
+            // Check the type of the flag
+            if (flag->type == CLI_TYPE_ARRAY)
+            {
+                if (
+                    !argv_t_process_array(
+                        &parsed_args,
+                        &command,
+                        &array_values,
+                        &parsing_array,
+                        &waiting_value
+                    )
+                )
+                {
+                    // Handle failure in processing the array
+                    parsed_args.success = 0; // Set success to false if array processing failed
+                    parsed_args.command = command;
+                    return parsed_args;
+                }
+                continue;
+            }
+
+            // Handle static flags
+            if (flag->type == CLI_TYPE_STATIC)
+            {
+                waiting_value = 0; // Reset waiting value flag
+
+                // Insert the static flag into the statics hashmap
+                hashmap_insert(parsed_args.statics, (void *)flag_name, (void *)1);
+            }
+
+            // Handle other types of flags
+            parsing_command = 0; // Reset parsing command flag
+            waiting_value = 1; // Set waiting value flag
+            last_type = flag->type; // Update the last type to the current flag type
+
+            // Skip subsequent code
+            continue;
+        }
+
+        // Check if we are waiting for a value
+        if (waiting_value)
+        {
+            // Handle arrays
+            if (parsing_array)
+            {
+                // Consider the arg to be a value
+                vec_push(array_values, (void *)arg);
+                continue;
+            }
+
+            // Add the value to the map depending on the type
+            cli_type_t parse_type;
+            cli_i_value_t *value;
+            if (parsing_command)
+            {
+                parse_type = command_type; // Use the command type if parsing a command
+            } else
+            {
+                parse_type = last_type; // Use the last type if not parsing a command
+
+                // Allocate memory for the value if needed
+                if (parse_type != CLI_TYPE_STATIC)
+                {
+                    value = malloc(sizeof(cli_i_value_t)); // Allocate memory for the value
+
+                    // Handle memory allocation failure
+                    if (value == NULL)
+                    {
+                        parsed_args.success = 0; // Set success to false if value allocation failed
+                        parsed_args.command = command;
+                        return parsed_args;
+                    }
+                }
+            }
+
+            // Parse the value based on the type
+            switch (parse_type)
+            {
+                case CLI_TYPE_INTEGER:
+                {
+                    // Convert the argument to an integer
+                    long int_value = atoi_convert(arg);
+
+                    // Parse commands
+                    if (parsing_command)
+                    {
+                        command.num_val = int_value; // Set the integer value for the command
+                        parsing_command = 0; // Reset parsing command flag
+                    } else
+                    {
+                        value->num_val = int_value; // Set the integer value for the flag
+                        // Insert the integer value into the integers hashmap
+                        hashmap_insert(parsed_args.integers, (void *)command_name, (void *)value);
+                    }
+                    break;
+                }
+
+                case CLI_TYPE_STATIC:
+                {
+                    // Ensure that we are not parsing a command
+                    if (parsing_command)
+                    {
+                        // Handle failure
+                        parsed_args.success = 0; // Set success to false if parsing a command with static flag
+                        parsed_args.command = command;
+                        return parsed_args;
+                    }
+
+                    // Insert the static flag into the statics hashmap
+                    hashmap_insert(parsed_args.statics, (void *)command_name, (void *)1);
+                    break;
+                }
+
+                case CLI_TYPE_ARRAY:
+                {
+                    // Add the value to the array values vector
+                    vec_push(array_values, (void *)arg);
+                    break;
+                }
+
+                case CLI_TYPE_STRING:
+                {
+                    // Ensure that we are not parsing a command
+                    if (parsing_command)
+                    {
+                        // Handle failure
+                        parsed_args.success = 0; // Set success to false if parsing a command with string flag
+                        parsed_args.command = command;
+                        return parsed_args;
+                    }
+
+                    // Set the value for the string flag
+                    value->value = arg;
+
+                    // Insert the string value into the strings hashmap
+                    hashmap_insert(parsed_args.strings, (void *)command_name, (void *)value);
+                    break;
+                }
+
+                case CLI_TYPE_FLOAT:
+                {
+                    // Convert the argument to a float
+                    float float_value = atof(arg);
+
+                    // Parse commands
+                    if (parsing_command)
+                    {
+                        command.float_val = float_value; // Set the float value for the command
+                        parsing_command = 0; // Reset parsing command flag
+                    } else
+                    {
+                        value->float_val = float_value; // Set the float value for the flag
+                        // Insert the float value into the floats hashmap
+                        hashmap_insert(parsed_args.floats, (void *)command_name, (void *)value);
+                    }
+                    break;
+                }
+            }
+
+            waiting_value = 0;
+            continue;
+        }
+
+        // Handle commands
+        if (command_name == NULL)
+        {
+            // Make sure we are not parsing a flag
+            if (waiting_value)
+            {
+                // Handle failure
+                parsed_args.success = 0;
+                return parsed_args;
+            }
+
+            command_name = arg; // Set the command name to the current argument
+
+            // Get the command from the commands map
+            const cli_value_t *command_value = (cli_value_t *)hashmap_get(app->commands, (void *)command_name);
+
+            // Check if the command exists
+            if (command_value == NULL)
+            {
+                // If the command does not exist, set success to false and return
+                parsed_args.success = 0; // Set success to false if command not found
+                parsed_args.command = command;
+                return parsed_args;
+            }
+
+            // Update the last type
+            command_type = command_value->type;
+            waiting_value = 1;
+            parsing_array = command_value->type == CLI_TYPE_ARRAY;
+
+            // Handle arrays
+            if (parsing_array)
+            {
+                // Process the array command
+                if (!argv_t_process_array(
+                        &parsed_args,
+                        &command,
+                        &array_values,
+                        &parsing_array,
+                        &waiting_value))
+                {
+                    // Handle failure in processing the array
+                    parsed_args.success = 0; // Set success to false if array processing failed
+                    parsed_args.command = command;
+                    return parsed_args;
+                }
+            }
+        } else
+        {
+            // Handle unexpected additional commands
+            parsed_args.success = 0; // Set success to false if multiple commands are found
+            parsed_args.command = command;
+            return parsed_args;
+        }
     }
+
+    // Make sure we are not waiting for a value at the end
+    // and have a command
+    if ((waiting_value && !parsing_array) || !command_name)
+    {
+        // Handle failure
+        parsed_args.success = 0; // Set success to false if we were waiting for a value at the end
+        parsed_args.command = command;
+        return parsed_args;
+    }
+
+    // Update the command value
+    parsed_args.command = command;
+    return parsed_args;
 }
 
-/*// ============= FLUENT LIB C++ =============
+// ============= FLUENT LIB C++ =============
 #if defined(__cplusplus)
 }
-#endif*/
+#endif
 
 #endif //FLUENT_LIBC_CLI_LIBRARY_H
