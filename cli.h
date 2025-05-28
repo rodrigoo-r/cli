@@ -104,6 +104,20 @@ typedef struct
     hashmap_t *arrays;      /**< Array flags */
 } argv_t;
 
+/**
+ * @brief Initializes an array value for a CLI array flag or command.
+ *
+ * This function allocates and initializes a vector to store multiple values
+ * for a CLI flag or command of type array. It updates the parsing state flags
+ * and assigns the new vector to the provided pointer.
+ *
+ * @param parsed_args    Pointer to the argv_t struct being populated.
+ * @param command        Pointer to the current command value.
+ * @param array_values   Output pointer to the vector_t* that will hold array values.
+ * @param parsing_array  Output flag set to 1 if parsing an array.
+ * @param waiting_value  Output flag set to 1 to indicate a value is expected.
+ * @return int           1 on success, 0 on memory allocation failure.
+ */
 static int argv_t_process_array(
     argv_t *parsed_args,
     const cli_i_value_t *command,
@@ -131,6 +145,27 @@ static int argv_t_process_array(
     return 1;
 }
 
+/**
+ * @brief Parses command-line arguments according to the provided CLI schema.
+ *
+ * This function processes the given `argc` and `argv` parameters, matching them
+ * against the expected flags and commands defined in the `cli_app_t` schema.
+ * It supports static (boolean) flags, integer, float, and string flags, as well as
+ * array (multi-value) flags and single command support with arguments.
+ *
+ * The parsed results are stored in an `argv_t` struct, which contains hashmaps
+ * for each flag type and the parsed command value.
+ *
+ * @param argc The number of command-line arguments.
+ * @param argv The array of command-line argument strings.
+ * @param app  Pointer to the CLI schema definition (`cli_app_t`).
+ * @return     An `argv_t` struct containing the parsed arguments and status.
+ *
+ * @note
+ *   - The function assumes the CLI schema is properly defined in `app`.
+ *   - Returns `success = 0` in the result if parsing fails at any point.
+ *   - Memory for values and vectors is dynamically allocated and should be freed by the caller.
+ */
 inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
 {
     // Define the structure to hold parsed command-line arguments
