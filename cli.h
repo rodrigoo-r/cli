@@ -9,7 +9,58 @@
 */
 
 // ============= FLUENT LIB C =============
-// TODO: Documentation
+// CLI Parser API
+// ----------------------------------------
+// A lightweight command-line interface (CLI) parser for C.
+//
+// Parses command-line arguments into a structured format
+// with support for:
+//
+// - Static (boolean) flags
+// - Integer, float, and string flags
+// - Array values (multi-value flags)
+// - Single command support with arguments
+//
+// Designed to work with `cli_app_t` definitions containing expected flags/commands.
+//
+// Features:
+// - parse_argv:      Parses argc/argv and returns structured CLI data
+// - argv_t:          Struct to hold parsed flags and command info
+//
+// Function Signatures:
+// ----------------------------------------
+// argv_t parse_argv(const int argc, char **argv, cli_app_t *app);
+//     Example:
+//         cli_app_t app = ...; // Define CLI structure
+//         argv_t args = parse_argv(argc, argv, &app);
+//
+// Structure Details:
+// ----------------------------------------
+// typedef struct
+// {
+//     int success;
+//     cli_i_value_t command;
+//     hashmap_t *statics;
+//     hashmap_t *strings;
+//     hashmap_t *integers;
+//     hashmap_t *floats;
+//     hashmap_t *arrays;
+// } argv_t;
+//
+// Notes:
+// - You must define your expected CLI schema using `cli_app_t`
+// - Uses internal hashmaps to store parsed data
+// - Automatically handles flag type matching and type conversion
+//
+// Dependencies:
+// ----------------------------------------
+// - fluent/hashmap
+// - fluent/atoi
+// - fluent/app (cli_app_t, cli_value_t definitions)
+//
+// ----------------------------------------
+// Initial revision: 2025-05-26
+// ----------------------------------------
 
 #ifndef FLUENT_LIBC_CLI_LIBRARY_H
 #define FLUENT_LIBC_CLI_LIBRARY_H
