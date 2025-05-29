@@ -189,7 +189,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
     parsed_args.integers = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
     parsed_args.floats = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
     parsed_args.arrays = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
-    parsed_args.cmd_name = NULL; // Initialize command name to NULL
+    parsed_args.cmd_ptr = NULL; // Initialize command to NULL
 
     // Check if the hashmaps were created successfully
     if (!parsed_args.statics || !parsed_args.strings || !parsed_args.integers ||
@@ -454,7 +454,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
             command_name = arg; // Set the command name to the current argument
 
             // Get the command from the commands map
-            const cli_value_t *command_value = (cli_value_t *)hashmap_get(app->commands, (void *)command_name);
+            cli_value_t *command_value = (cli_value_t *)hashmap_get(app->commands, (void *)command_name);
 
             // Check if the command exists
             if (command_value == NULL)
@@ -470,7 +470,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
             waiting_value = 1;
             parsing_array = command_value->type == CLI_TYPE_ARRAY;
             parsing_command = 1;
-            parsed_args.cmd_name = command_name; // Set the command name in parsed_args
+            parsed_args.cmd_ptr = command_value; // Set the command name in parsed_args
 
             // Handle arrays
             if (parsing_array)
