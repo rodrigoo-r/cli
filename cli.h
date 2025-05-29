@@ -604,6 +604,7 @@ static inline void cli_destroy_app(const cli_app_t *app, const bool free_map_val
         // Free the hashmaps
         destroy_argv_map(app->commands, free_map_values);
         destroy_argv_map(app->flags, free_map_values);
+        destroy_argv_map(app->required_flags, FALSE);
     }
 }
 
