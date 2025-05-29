@@ -170,7 +170,7 @@ static int argv_t_process_array(
  *   - Returns `success = 0` in the result if parsing fails at any point.
  *   - Memory for values and vectors is dynamically allocated and should be freed by the caller.
  */
-inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
+static inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
 {
     // Define the structure to hold parsed command-line arguments
     argv_t parsed_args;
@@ -557,7 +557,7 @@ static void destroy_argv_map(hashmap_t *map)
  *
  * @param args Pointer to the argv_t struct to be destroyed. If NULL, the function does nothing.
  */
-inline void destroy_argv(argv_t *args)
+static inline void destroy_argv(argv_t *args)
 {
     if (args)
     {
