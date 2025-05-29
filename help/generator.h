@@ -74,38 +74,38 @@ static void write_app_values(
             {
                 write_string_builder(builder, "  --"); // All flags start with "--"
             }
-            // Create a new builder for each flag in order to add padding
-            string_builder_t flag_builder;
-            init_string_builder(&flag_builder, 50, 1.5); // Initial capacity for each flag
-            write_string_builder(&flag_builder, entry->key);
+            // Create a new builder for each value in order to add padding
+            string_builder_t value_builder;
+            init_string_builder(&value_builder, 50, 1.5); // Initial capacity for each flag
+            write_string_builder(&value_builder, entry->key);
 
             // Write aliases if they exist
             if (value->alias)
             {
                 if (is_flag)
                 {
-                    write_string_builder(&flag_builder, ", -");
+                    write_string_builder(&value_builder, ", -");
                 } else
                 {
-                    write_string_builder(&flag_builder, ", ");
+                    write_string_builder(&value_builder, ", ");
                 }
 
-                write_string_builder(&flag_builder, value->alias);
+                write_string_builder(&value_builder, value->alias);
             }
 
-            // Add padding to the flag description
-            const char *padded = str_pad(padding_size, collect_string_builder_no_copy(&flag_builder));
+            // Add padding to the description
+            const char *padded = str_pad(padding_size, collect_string_builder_no_copy(&value_builder));
 
-            // Write the padded flag to the main builder
+            // Write the padded to the main builder
             write_string_builder(builder, padded);
 
-            // Write the description of the flag
+            // Write the description
             write_string_builder(builder, value->description);
             write_string_builder(builder, "\n");
 
             // Since the string has been copied to the buffer
-            // it's now safe to free the flag builder
-            destroy_string_builder(&flag_builder);
+            // it's now safe to free the value builder
+            destroy_string_builder(&value_builder);
         }
     }
 }
