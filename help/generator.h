@@ -101,6 +101,30 @@ static void write_app_values(
 
             // Write the description
             write_string_builder(builder, value->description);
+
+            // Write the type if needed
+            if (value->type != CLI_TYPE_STATIC)
+            {
+                switch (value->type)
+                {
+                    case CLI_TYPE_STRING:
+                        write_string_builder(builder, " (string)");
+                        break;
+                    case CLI_TYPE_INTEGER:
+                        write_string_builder(builder, " (integer)");
+                        break;
+                    case CLI_TYPE_FLOAT:
+                        write_string_builder(builder, " (float)");
+                        break;
+                    case CLI_TYPE_ARRAY:
+                        write_string_builder(builder, " (array)");
+                        break;
+                    default:
+                        // No type to display
+                        break;
+                }
+            }
+
             write_string_builder(builder, "\n");
 
             // Since the string has been copied to the buffer
