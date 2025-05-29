@@ -240,6 +240,9 @@ static inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
             {
                 // Update the flag name to the long flag
                 flag_name = arg + 2; // Skip the '--'
+
+                // Remove the flag name from the required flags
+                hashmap_remove(app->required_flags, (void *)flag_name);
             } else if (arg[1] == '\0') // Handle unexpected single dash
             {
                 parsed_args.success = 0; // Set success to false if a single dash is found
@@ -257,6 +260,9 @@ static inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
                     parsed_args.command = command;
                     return parsed_args;
                 }
+
+                // Remove the flag name from the required flags
+                hashmap_remove(app->required_flags, (void *)flag_name);
             }
 
             // Get the flag from the flag map
@@ -496,7 +502,7 @@ static inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
 
     // Make sure we are not waiting for a value at the end
     // and have a command
-    if ((waiting_value && !parsing_array) || !command_name)
+    if ((waiting_value && !parsing_array) || !command_name || app->required_flags->count != 0)
     {
         // Handle failure
         parsed_args.success = 0; // Set success to false if we were waiting for a value at the end
