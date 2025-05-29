@@ -463,6 +463,7 @@ static inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
             command_type = command_value->type;
             waiting_value = 1;
             parsing_array = command_value->type == CLI_TYPE_ARRAY;
+            parsing_command = 1;
 
             // Handle arrays
             if (parsing_array)
