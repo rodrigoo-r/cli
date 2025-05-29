@@ -71,9 +71,11 @@
 #ifndef FLUENT_LIBC_RELEASE
 #   include <hashmap.h> // fluent_libc
 #   include <atoi.h> // fluent_libc
+#   include <std_bool.h> // fluent_libc
 #else
 #   include <fluent/hashmap/hashmap.h> // fluent_libc
 #   include <fluent/atoi/atoi.h> // fluent_libc
+#   include <fluent/std_bool/std_bool.h> // fluent_libc
 #endif
 #include "app/app.h"
 
@@ -514,8 +516,9 @@ static inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
  * frees the hashmap itself.
  *
  * @param map Pointer to the hashmap to be destroyed. If NULL, the function does nothing.
+ * @param free_map_values If true, the function will free the values in the hashmap.
  */
-static void destroy_argv_map(hashmap_t *map)
+static void destroy_argv_map(hashmap_t *map, const bool free_map_values)
 {
     if (!map) return;
 
@@ -542,7 +545,10 @@ static void destroy_argv_map(hashmap_t *map)
         }
 
         // Free the value itself
-        free(value);
+        if (free_map_values)
+        {
+            free(value); // Free the cli_i_value_t structure
+        }
     }
 
     hashmap_free(map); // Free the hashmap itself
@@ -562,11 +568,11 @@ static inline void destroy_argv(argv_t *args)
     if (args)
     {
         // Free the hashmaps
-        destroy_argv_map(args->statics);
-        destroy_argv_map(args->strings);
-        destroy_argv_map(args->integers);
-        destroy_argv_map(args->floats);
-        destroy_argv_map(args->arrays);
+        destroy_argv_map(args->statics, TRUE);
+        destroy_argv_map(args->strings, TRUE);
+        destroy_argv_map(args->integers, TRUE);
+        destroy_argv_map(args->floats, TRUE);
+        destroy_argv_map(args->arrays, TRUE);
 
         // Free the command value if it has a vector
         if (args->command.vec_value)
@@ -577,6 +583,16 @@ static inline void destroy_argv(argv_t *args)
 
         // Reset the success flag
         args->success = 0;
+    }
+}
+
+static inline void cli_destroy_app(const cli_app_t *app, const bool free_map_values)
+{
+    if (app)
+    {
+        // Free the hashmaps
+        destroy_argv_map(app->commands, free_map_values);
+        destroy_argv_map(app->flags, free_map_values);
     }
 }
 
