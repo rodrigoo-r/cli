@@ -59,7 +59,7 @@ typedef struct
  * @param app Pointer to a `cli_app_t` structure to initialize.
  * @return 1 on success, 0 if memory allocation fails.
  */
-static inline unsigned int cli_new_app(cli_app_t *app)
+static inline bool cli_new_app(cli_app_t *app)
 {
     app->flags = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
     app->commands = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
@@ -67,10 +67,10 @@ static inline unsigned int cli_new_app(cli_app_t *app)
     // Handle memory allocation failure
     if (!app->flags || !app->commands)
     {
-        return 0; // Memory allocation failed
+        return FALSE; // Memory allocation failed
     }
 
-    return 1; // Successfully created the CLI application
+    return TRUE; // Successfully created the CLI application
 }
 
 /**
@@ -84,7 +84,7 @@ static inline unsigned int cli_new_app(cli_app_t *app)
  * @param name The name to search for in the flags and commands.
  * @return Non-zero if the name exists, zero otherwise.
  */
-static inline int cli_has_value(const cli_app_t *app, const char *name)
+static inline bool cli_has_value(const cli_app_t *app, const char *name)
 {
     if (app->flags && name)
     {
@@ -94,7 +94,7 @@ static inline int cli_has_value(const cli_app_t *app, const char *name)
             || hashmap_get(app->commands, (void *)name) != NULL;
     }
 
-    return 0; // Invalid parameters, return false
+    return FALSE; // Invalid parameters, return false
 }
 
 /**
@@ -106,7 +106,7 @@ static inline int cli_has_value(const cli_app_t *app, const char *name)
  * @param flag_name Name of the flag to insert.
  * @param value Pointer to the value associated with the flag.
  */
-static inline int cli_insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t *value)
+static inline bool cli_insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t *value)
 {
     if (app && app->flags && flag_name && value)
     {
@@ -114,7 +114,7 @@ static inline int cli_insert_flag(const cli_app_t *app, const char *flag_name, c
         if (cli_has_value(app, flag_name))
         {
             // Handle the case where the flag already exists
-            return 0; // Flag already exists, do not insert again
+            return FALSE; // Flag already exists, do not insert again
         }
 
         // Insert the flag into the hashmap
@@ -127,16 +127,16 @@ static inline int cli_insert_flag(const cli_app_t *app, const char *flag_name, c
             if (cli_has_value(app, value->alias))
             {
                 // Handle the case where the alias already exists
-                return 0; // Alias already exists, do not insert again
+                return FALSE; // Alias already exists, do not insert again
             }
 
             // Insert the alias into the hashmap
             hashmap_insert(app->flags, (void *)value->alias, value);
         }
-        return 1; // Successfully inserted the flag
+        return TRUE; // Successfully inserted the flag
     }
 
-    return 0; // Invalid parameters, insertion failed
+    return FALSE; // Invalid parameters, insertion failed
 }
 
 /**
@@ -148,7 +148,7 @@ static inline int cli_insert_flag(const cli_app_t *app, const char *flag_name, c
  * @param command_name Name of the command to insert.
  * @param value Pointer to the value associated with the command.
  */
-static inline int cli_insert_command(const cli_app_t *app, const char *command_name, cli_value_t *value)
+static inline bool cli_insert_command(const cli_app_t *app, const char *command_name, cli_value_t *value)
 {
     if (app && app->commands && command_name && value)
     {
@@ -156,7 +156,7 @@ static inline int cli_insert_command(const cli_app_t *app, const char *command_n
         if (cli_has_value(app, command_name))
         {
             // Handle the case where the command already exists
-            return 0; // Flag already exists, do not insert again
+            return FALSE; // Flag already exists, do not insert again
         }
 
         // Insert the command into the hashmap
@@ -169,17 +169,17 @@ static inline int cli_insert_command(const cli_app_t *app, const char *command_n
             if (cli_has_value(app, value->alias))
             {
                 // Handle the case where the alias already exists
-                return 0; // Alias already exists, do not insert again
+                return FALSE; // Alias already exists, do not insert again
             }
 
             // Insert the alias into the hashmap
             hashmap_insert(app->commands, (void *)value->alias, value);
         }
 
-        return 1; // Successfully inserted the command
+        return TRUE; // Successfully inserted the command
     }
 
-    return 0; // Invalid parameters, insertion failed
+    return FALSE; // Invalid parameters, insertion failed
 }
 
 // ============= FLUENT LIB C++ =============
