@@ -144,24 +144,31 @@ static inline char *cli_generate_help(
     write_string_builder(&builder, "\n\nUsage: ");
     write_string_builder(&builder, name);
     write_string_builder(&builder, " [flags...] <command> [flags...] <value> [flags...]\n\n");
-    write_string_builder(&builder, "AVAILABLE FLAGS:\n");
 
-    // Write the flags to the builder
-    write_app_values(
-        &builder,
-        app->flags,
-        TRUE, // Flags
-        padding_size
-    );
+    // Write the available flags to the builder
+    if (app->flags->count > 0)
+    {
+        // Write the flags to the builder
+        write_string_builder(&builder, "AVAILABLE FLAGS:\n");
+        write_app_values(
+            &builder,
+            app->flags,
+            TRUE, // Flags
+            padding_size
+        );
+    }
 
-    // Write the commands to the builder
-    write_string_builder(&builder, "\nAVAILABLE COMMANDS:\n");
-    write_app_values(
-        &builder,
-        app->commands,
-        FALSE, // Commands
-        padding_size
-    );
+    if (app->commands->count > 0)
+    {
+        // Write the commands to the builder
+        write_string_builder(&builder, "\nAVAILABLE COMMANDS:\n");
+        write_app_values(
+            &builder,
+            app->commands,
+            FALSE, // Commands
+            padding_size
+        );
+    }
 
     // Return the generated help message without copying
     return collect_string_builder_no_copy(&builder);
