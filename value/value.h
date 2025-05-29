@@ -23,8 +23,10 @@ extern "C"
 
 #ifndef FLUENT_LIBC_RELEASE
 #   include <vector.h> // fluent_libc
+#   include <std_bool.h> // fluent_libc
 #else
 #   include <fluent/vector/vector.h> // fluent_libc
+#   include <fluent/std_bool/std_bool.h> // fluent_libc
 #endif
 #include "../type/type.h"
 
@@ -41,12 +43,14 @@ extern "C"
  *   type        : Type of the flag (see cli_type_t).
  *   value       : Pointer to the value of the flag/command.
  *   alias       : Alias for the flag/command (may be NULL).
+ *   required    : Indicates if the flag/command is required (default is FALSE).
  */
 typedef struct
 {
     char *description;   /**< Description of the flag/command */
     cli_type_t type;     /**< Type of the flag/command (static, string, integer, float, array) */
     char *alias;         /**< Alias for the flag/command (may be NULL) */
+    bool required;       /**< Indicates if the flag/command is required (default is FALSE) */
 } cli_value_t;
 
 /**
@@ -76,14 +80,16 @@ typedef struct
  * @param description  The description of the flag/command.
  * @param type         The type of the flag/command (see cli_type_t).
  * @param alias        The alias for the flag/command (may be NULL).
+ * @param required     Indicates if the flag/command is required (default is FALSE).
  * @return             An initialized cli_value_t structure.
  */
-static inline cli_value_t cli_new_value(const char *description, const cli_type_t type, const char *alias)
+static inline cli_value_t cli_new_value(const char *description, const cli_type_t type, const char *alias, const bool required)
 {
     cli_value_t value;
     value.description = (char *)description; // Copy the description
     value.type = type;                       // Set the type
     value.alias = (char *)alias;             // Copy the alias
+    value.required = required;               // Set the required flag
 
     return value; // Return the initialized value
 }
