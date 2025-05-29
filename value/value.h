@@ -85,7 +85,7 @@ typedef struct
  * @param alias        The alias for the flag/command (may be NULL).
  * @return             An initialized cli_value_t structure.
  */
-inline cli_value_t cli_new_value(const char *name, const char *description, const cli_type_t type, const char *alias)
+static inline cli_value_t cli_new_value(const char *name, const char *description, const cli_type_t type, const char *alias)
 {
     cli_value_t value;
     value.description = (char *)description; // Copy the description
