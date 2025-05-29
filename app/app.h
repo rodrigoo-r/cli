@@ -44,6 +44,10 @@ typedef struct
 {
     hashmap_t *flags; /**< Flags */
     hashmap_t *commands; /**< Commands */
+
+    // INTERNALS
+    hashmap_t *required_flags; /**< Flags */
+    hashmap_t *required_commands; /**< Commands */
 } cli_app_t;
 
 /**
@@ -59,6 +63,8 @@ static inline bool cli_new_app(cli_app_t *app)
 {
     app->flags = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
     app->commands = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
+    app->required_commands = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
+    app->required_flags = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
 
     // Handle memory allocation failure
     if (!app->flags || !app->commands)
@@ -129,6 +135,13 @@ static inline bool cli_insert_flag(const cli_app_t *app, const char *flag_name, 
             // Insert the alias into the hashmap
             hashmap_insert(app->flags, (void *)value->alias, value);
         }
+
+        // Insert to the required map if needed
+        if (value->required)
+        {
+            hashmap_insert(app->required_flags, (void *)flag_name, value);
+        }
+
         return TRUE; // Successfully inserted the flag
     }
 
@@ -170,6 +183,12 @@ static inline bool cli_insert_command(const cli_app_t *app, const char *command_
 
             // Insert the alias into the hashmap
             hashmap_insert(app->commands, (void *)value->alias, value);
+        }
+
+        // Insert to the required map if needed
+        if (value->required)
+        {
+            hashmap_insert(app->required_commands, (void *)command_name, value);
         }
 
         return TRUE; // Successfully inserted the command
