@@ -209,7 +209,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
     const char *command_name = NULL;
 
     // Iterate through the command-line arguments
-    for (int i = 0; i < argc; i++)
+    for (int i = 1; i < argc; i++)
     {
         // Get the current argument
         const char *arg = argv[i];
