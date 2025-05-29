@@ -137,7 +137,7 @@ static inline char *cli_generate_help(
     write_string_builder(&builder, desc);
     write_string_builder(&builder, "\n\nUsage: ");
     write_string_builder(&builder, name);
-    write_string_builder(&builder, "[flags...] <command> [flags...] <value> [flags...]\n\n");
+    write_string_builder(&builder, " [flags...] <command> [flags...] <value> [flags...]\n\n");
     write_string_builder(&builder, "AVAILABLE FLAGS:\n");
 
     // Write the flags to the builder
