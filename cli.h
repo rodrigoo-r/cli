@@ -172,7 +172,7 @@ static int argv_t_process_array(
  *   - Returns `success = 0` in the result if parsing fails at any point.
  *   - Memory for values and vectors is dynamically allocated and should be freed by the caller.
  */
-static inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
+static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *app)
 {
     // Define the structure to hold parsed command-line arguments
     argv_t parsed_args;
