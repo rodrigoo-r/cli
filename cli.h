@@ -586,6 +586,16 @@ static inline void destroy_argv(argv_t *args)
     }
 }
 
+/**
+ * @brief Frees all memory associated with a cli_app_t struct.
+ *
+ * This function releases all dynamically allocated memory used by the hashmaps
+ * in the given cli_app_t struct, including both commands and flags.
+ * If free_map_values is true, the function will also free the values stored in the hashmaps.
+ *
+ * @param app Pointer to the cli_app_t struct to be destroyed. If NULL, the function does nothing.
+ * @param free_map_values If true, the function will free the values in the hashmaps.
+ */
 static inline void cli_destroy_app(const cli_app_t *app, const bool free_map_values)
 {
     if (app)
