@@ -59,7 +59,7 @@ typedef struct
  * @param app Pointer to a `cli_app_t` structure to initialize.
  * @return 1 on success, 0 if memory allocation fails.
  */
-inline unsigned int cli_new_app(cli_app_t *app)
+static inline unsigned int cli_new_app(cli_app_t *app)
 {
     app->flags = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
     app->commands = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
@@ -84,7 +84,7 @@ inline unsigned int cli_new_app(cli_app_t *app)
  * @param name The name to search for in the flags and commands.
  * @return Non-zero if the name exists, zero otherwise.
  */
-static int cli_has_value(const cli_app_t *app, const char *name)
+static inline int cli_has_value(const cli_app_t *app, const char *name)
 {
     if (app->flags && name)
     {
@@ -106,7 +106,7 @@ static int cli_has_value(const cli_app_t *app, const char *name)
  * @param flag_name Name of the flag to insert.
  * @param value Pointer to the value associated with the flag.
  */
-inline int cli_insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t *value)
+static inline int cli_insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t *value)
 {
     if (app && app->flags && flag_name && value)
     {
@@ -148,7 +148,7 @@ inline int cli_insert_flag(const cli_app_t *app, const char *flag_name, cli_valu
  * @param command_name Name of the command to insert.
  * @param value Pointer to the value associated with the command.
  */
-inline int cli_insert_command(const cli_app_t *app, const char *command_name, cli_value_t *value)
+static inline int cli_insert_command(const cli_app_t *app, const char *command_name, cli_value_t *value)
 {
     if (app && app->commands && command_name && value)
     {
