@@ -65,7 +65,7 @@ static void write_app_values(
         if (value)
         {
             // Ignore non-original names
-            if (value->alias && strcmp(value->alias, value->original_name) == 0)
+            if (value->alias && strcmp(value->alias, entry->key) == 0)
             {
                 continue; // Skip if the alias is the same as the original name
             }
