@@ -108,6 +108,7 @@ typedef struct
     hashmap_t *integers;    /**< Integer flags */
     hashmap_t *floats;      /**< Float flags */
     hashmap_t *arrays;      /**< Array flags */
+    const char *cmd_name;   /**< Name of the command being parsed, if any */
 } argv_t;
 
 /**
