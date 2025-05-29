@@ -115,7 +115,7 @@ static void write_app_values(
  *                      or NULL if parameters are invalid. The caller is responsible for freeing
  *                      the returned string.
  */
-static inline char *generate_help(
+static inline char *cli_generate_help(
     const cli_app_t *app,
     const char *name,
     const char *desc,
