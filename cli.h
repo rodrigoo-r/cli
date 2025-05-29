@@ -524,8 +524,9 @@ static inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
  *
  * @param map Pointer to the hashmap to be destroyed. If NULL, the function does nothing.
  * @param free_map_values If true, the function will free the values in the hashmap.
+ * @param is_impl If true, the function will use cli_i_value_t instead of cli_value_t.
  */
-static void destroy_argv_map(hashmap_t *map, const bool free_map_values)
+static void destroy_argv_map(hashmap_t *map, const bool free_map_values, const bool is_impl)
 {
     if (!map) return;
 
@@ -537,18 +538,23 @@ static void destroy_argv_map(hashmap_t *map, const bool free_map_values)
     while ((entry = hashmap_iter_next(&iter)) != NULL)
     {
         // Get the value from the entry
-        cli_i_value_t *value = (cli_i_value_t *)entry->value;
+        void *value = (cli_i_value_t *)entry->value;
         if (value == NULL)
         {
             continue; // Skip if the value is NULL
         }
 
-        // Check if we have a vector
-        if (value->vec_value)
+        // Handle impl cases
+        if (is_impl)
         {
-            // Destroy the vector and free its memory
-            vec_destroy(value->vec_value, NULL);
-            free(value->vec_value);
+            const cli_i_value_t *cli_value = (cli_i_value_t *)value;
+            // Check if we have a vector
+            if (cli_value->vec_value)
+            {
+                // Destroy the vector and free its memory
+                vec_destroy(cli_value->vec_value, NULL);
+                free(cli_value->vec_value);
+            }
         }
 
         // Free the value itself
@@ -575,11 +581,11 @@ static inline void destroy_argv(argv_t *args)
     if (args)
     {
         // Free the hashmaps
-        destroy_argv_map(args->statics, TRUE);
-        destroy_argv_map(args->strings, TRUE);
-        destroy_argv_map(args->integers, TRUE);
-        destroy_argv_map(args->floats, TRUE);
-        destroy_argv_map(args->arrays, TRUE);
+        destroy_argv_map(args->statics, TRUE, TRUE);
+        destroy_argv_map(args->strings, TRUE, TRUE);
+        destroy_argv_map(args->integers, TRUE, TRUE);
+        destroy_argv_map(args->floats, TRUE, TRUE);
+        destroy_argv_map(args->arrays, TRUE, TRUE);
 
         // Free the command value if it has a vector
         if (args->command.vec_value)
@@ -608,9 +614,9 @@ static inline void cli_destroy_app(const cli_app_t *app, const bool free_map_val
     if (app)
     {
         // Free the hashmaps
-        destroy_argv_map(app->commands, free_map_values);
-        destroy_argv_map(app->flags, free_map_values);
-        destroy_argv_map(app->required_flags, FALSE);
+        destroy_argv_map(app->commands, free_map_values, FALSE);
+        destroy_argv_map(app->flags, free_map_values, FALSE);
+        destroy_argv_map(app->required_flags, FALSE, FALSE);
     }
 }
 
