@@ -183,11 +183,11 @@ static inline argv_t parse_argv(const int argc, char **argv, cli_app_t *app)
     command.vec_value = NULL; // Initialize vector value to NULL
 
     parsed_args.success = 1; // Assume success initially
-    parsed_args.statics = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
-    parsed_args.strings = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
-    parsed_args.integers = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
-    parsed_args.floats = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
-    parsed_args.arrays = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
+    parsed_args.statics = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
+    parsed_args.strings = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
+    parsed_args.integers = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
+    parsed_args.floats = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
+    parsed_args.arrays = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
 
     // Check if the hashmaps were created successfully
     if (!parsed_args.statics || !parsed_args.strings || !parsed_args.integers ||

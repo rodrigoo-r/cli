@@ -61,8 +61,8 @@ typedef struct
  */
 static inline unsigned int cli_new_app(cli_app_t *app)
 {
-    app->flags = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
-    app->commands = hashmap_new(15, 1.5, NULL, hash_str_key, 0);
+    app->flags = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
+    app->commands = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
 
     // Handle memory allocation failure
     if (!app->flags || !app->commands)
