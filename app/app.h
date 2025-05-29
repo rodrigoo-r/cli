@@ -182,34 +182,6 @@ static inline int cli_insert_command(const cli_app_t *app, const char *command_n
     return 0; // Invalid parameters, insertion failed
 }
 
-/**
- * @brief Frees the resources associated with a CLI application state.
- *
- * This function releases the memory allocated for the flags and commands
- * hashmaps within the provided `cli_app_t` structure and sets their pointers to NULL.
- *
- * @param app Pointer to the CLI application state to free.
- */
-static inline void cli_free_app(cli_app_t *app)
-{
-    if (app)
-    {
-        // Free the flags hashmap
-        if (app->flags)
-        {
-            hashmap_free(app->flags);
-            app->flags = NULL;
-        }
-
-        // Free the commands hashmap
-        if (app->commands)
-        {
-            hashmap_free(app->commands);
-            app->commands = NULL;
-        }
-    }
-}
-
 // ============= FLUENT LIB C++ =============
 #if defined(__cplusplus)
 }
