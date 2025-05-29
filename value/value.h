@@ -41,14 +41,12 @@ extern "C"
  *   type        : Type of the flag (see cli_type_t).
  *   value       : Pointer to the value of the flag/command.
  *   alias       : Alias for the flag/command (may be NULL).
- *   original_name : Original name of the flag/command.
  */
 typedef struct
 {
     char *description;   /**< Description of the flag/command */
     cli_type_t type;     /**< Type of the flag/command (static, string, integer, float, array) */
     char *alias;         /**< Alias for the flag/command (may be NULL) */
-    char *original_name; /**< Original name of the flag/command */
 } cli_value_t;
 
 /**
@@ -75,19 +73,17 @@ typedef struct
 /**
  * @brief Creates and initializes a new cli_value_t structure.
  *
- * @param name         The original name of the flag/command.
  * @param description  The description of the flag/command.
  * @param type         The type of the flag/command (see cli_type_t).
  * @param alias        The alias for the flag/command (may be NULL).
  * @return             An initialized cli_value_t structure.
  */
-static inline cli_value_t cli_new_value(const char *name, const char *description, const cli_type_t type, const char *alias)
+static inline cli_value_t cli_new_value(const char *description, const cli_type_t type, const char *alias)
 {
     cli_value_t value;
     value.description = (char *)description; // Copy the description
     value.type = type;                       // Set the type
     value.alias = (char *)alias;             // Copy the alias
-    value.original_name = (char *)name;      // Copy the original name
 
     return value; // Return the initialized value
 }
