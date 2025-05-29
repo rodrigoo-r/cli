@@ -399,20 +399,18 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
 
                 case CLI_TYPE_STRING:
                 {
-                    // Ensure that we are not parsing a command
+                    // Parse commands
                     if (parsing_command)
                     {
-                        // Handle failure
-                        parsed_args.success = 0; // Set success to false if parsing a command with string flag
-                        parsed_args.command = command;
-                        return parsed_args;
+                        command.value = arg; // Set the float value for the command
+                        parsing_command = 0; // Reset parsing command flag
+                    } else
+                    {
+                        value->value = arg; // Set the float value for the flag
+                        // Insert the float value into the floats hashmap
+                        hashmap_insert(parsed_args.floats, (void *)command_name, (void *)value);
                     }
 
-                    // Set the value for the string flag
-                    value->value = arg;
-
-                    // Insert the string value into the strings hashmap
-                    hashmap_insert(parsed_args.strings, (void *)command_name, (void *)value);
                     break;
                 }
 
@@ -436,7 +434,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                 }
             }
 
-            waiting_value = 0;
+            waiting_value = parse_type == CLI_TYPE_ARRAY;
             continue;
         }
 
