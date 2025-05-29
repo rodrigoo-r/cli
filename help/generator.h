@@ -64,6 +64,12 @@ static void write_app_values(
         const cli_value_t *value = (cli_value_t *)entry->value;
         if (value)
         {
+            // Ignore non-original names
+            if (value->alias && strcmp(value->alias, value->original_name) == 0)
+            {
+                continue; // Skip if the alias is the same as the original name
+            }
+
             if (is_flag)
             {
                 write_string_builder(builder, "  --"); // All flags start with "--"
