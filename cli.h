@@ -85,6 +85,11 @@ extern "C"
 {
 #endif
 
+#ifndef FLUENT_LIBC_CLI_HASHMAP_I_VALUE
+    DEFINE_HASHMAP(char *, cli_i_value_t *, cli_i)
+#   define FLUENT_LIBC_CLI_HASHMAP_I_VALUE 1
+#endif
+
 /**
  * @brief Structure to hold parsed command-line arguments.
  *
@@ -103,11 +108,11 @@ typedef struct
 {
     int success;            /**< Indicates if parsing was successful */
     cli_i_value_t command;  /**< Command value */
-    hashmap_t *statics;     /**< Static (boolean) flags */
-    hashmap_t *strings;     /**< String flags */
-    hashmap_t *integers;    /**< Integer flags */
-    hashmap_t *floats;      /**< Float flags */
-    hashmap_t *arrays;      /**< Array flags */
+    hashmap_cli_i_t *statics;     /**< Static (boolean) flags */
+    hashmap_cli_i_t *strings;     /**< String flags */
+    hashmap_cli_i_t *integers;    /**< Integer flags */
+    hashmap_cli_i_t *floats;      /**< Float flags */
+    hashmap_cli_i_t *arrays;      /**< Array flags */
     cli_value_t *cmd_ptr;   /**< Pointer to the command value in the CLI schema */
 } argv_t;
 
@@ -184,11 +189,46 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
     command.vec_value = NULL; // Initialize vector value to NULL
 
     parsed_args.success = 1; // Assume success initially
-    parsed_args.statics = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
-    parsed_args.strings = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
-    parsed_args.integers = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
-    parsed_args.floats = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
-    parsed_args.arrays = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
+    parsed_args.statics = hashmap_cli_i_new(
+        15,
+        1.5,
+        NULL,
+        (hash_cli_i_function_t)hash_str_key,
+        (hash_cli_i_cmp_t)cmp_str
+    );
+
+    parsed_args.strings = hashmap_cli_i_new(
+        15,
+        1.5,
+        NULL,
+        (hash_cli_i_function_t)hash_str_key,
+        (hash_cli_i_cmp_t)cmp_str
+    );
+
+    parsed_args.integers = hashmap_cli_i_new(
+        15,
+        1.5,
+        NULL,
+        (hash_cli_i_function_t)hash_str_key,
+        (hash_cli_i_cmp_t)cmp_str
+    );
+
+    parsed_args.floats = hashmap_cli_i_new(
+        15,
+        1.5,
+        NULL,
+        (hash_cli_i_function_t)hash_str_key,
+        (hash_cli_i_cmp_t)cmp_str
+    );
+
+    parsed_args.arrays = hashmap_cli_i_new(
+        15,
+        1.5,
+        NULL,
+        (hash_cli_i_function_t)hash_str_key,
+        (hash_cli_i_cmp_t)cmp_str
+    );
+
     parsed_args.cmd_ptr = NULL; // Initialize command to NULL
 
     // Check if the hashmaps were created successfully
@@ -244,7 +284,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                 flag_name = arg + 2; // Skip the '--'
 
                 // Remove the flag name from the required flags
-                hashmap_remove(app->required_flags, (void *)flag_name);
+                hashmap_cli_value_remove(app->required_flags, flag_name);
             } else if (arg[1] == '\0') // Handle unexpected single dash
             {
                 parsed_args.success = 0; // Set success to false if a single dash is found
@@ -264,14 +304,14 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                 }
 
                 // Remove the flag name from the required flags
-                hashmap_remove(app->required_flags, (void *)flag_name);
+                hashmap_cli_value_remove(app->required_flags, flag_name);
             }
 
             // Get the flag from the flag map
-            const cli_value_t *flag = (cli_value_t *)hashmap_get(app->flags, (void *)flag_name);
+            cli_value_t **flag_ptr = hashmap_cli_value_get(app->flags, (char *)flag_name);
 
             // Check if the flag exists
-            if (flag == NULL)
+            if (flag_ptr == NULL)
             {
                 // If the flag does not exist, set success to false and return
                 parsed_args.success = 0;
@@ -279,6 +319,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                 return parsed_args;
             }
 
+            const cli_value_t *flag = *flag_ptr; // Dereference the pointer to get the flag value
             // Check the type of the flag
             if (flag->type == CLI_TYPE_ARRAY)
             {
@@ -306,7 +347,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                 waiting_value = 0; // Reset waiting value flag
 
                 // Insert the static flag into the statics hashmap
-                hashmap_insert(parsed_args.statics, (void *)flag_name, (void *)1);
+                hashmap_cli_i_insert(parsed_args.statics, (char *)flag_name, (void *)1);
             }
 
             // Handle other types of flags
@@ -371,7 +412,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                     {
                         value->num_val = int_value; // Set the integer value for the flag
                         // Insert the integer value into the integers hashmap
-                        hashmap_insert(parsed_args.integers, (void *)command_name, (void *)value);
+                        hashmap_cli_i_insert(parsed_args.integers, (void *)command_name, (void *)value);
                     }
                     break;
                 }
@@ -388,7 +429,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                     }
 
                     // Insert the static flag into the statics hashmap
-                    hashmap_insert(parsed_args.statics, (void *)command_name, (void *)1);
+                    hashmap_cli_i_insert(parsed_args.statics, (char *)command_name, (void *)1);
                     break;
                 }
 
@@ -410,7 +451,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                     {
                         value->value = arg; // Set the float value for the flag
                         // Insert the float value into the floats hashmap
-                        hashmap_insert(parsed_args.floats, (void *)command_name, (void *)value);
+                        hashmap_cli_i_insert(parsed_args.strings, (char *)command_name, value);
                     }
 
                     break;
@@ -430,7 +471,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                     {
                         value->float_val = float_value; // Set the float value for the flag
                         // Insert the float value into the floats hashmap
-                        hashmap_insert(parsed_args.floats, (void *)command_name, (void *)value);
+                        hashmap_cli_i_insert(parsed_args.floats, (char *)command_name, value);
                     }
                     break;
                 }
@@ -454,10 +495,10 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
             command_name = arg; // Set the command name to the current argument
 
             // Get the command from the commands map
-            cli_value_t *command_value = (cli_value_t *)hashmap_get(app->commands, (void *)command_name);
+            cli_value_t **command_value_ptr = hashmap_cli_value_get(app->commands, (void *)command_name);
 
             // Check if the command exists
-            if (command_value == NULL)
+            if (command_value_ptr == NULL)
             {
                 // If the command does not exist, set success to false and return
                 parsed_args.success = 0; // Set success to false if command not found
@@ -465,6 +506,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                 return parsed_args;
             }
 
+            cli_value_t *command_value = *command_value_ptr; // Dereference the pointer to get the command value
             // Update the last type
             command_type = command_value->type;
             waiting_value = 1;
@@ -525,37 +567,31 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
  *
  * @param map Pointer to the hashmap to be destroyed. If NULL, the function does nothing.
  * @param free_map_values If true, the function will free the values in the hashmap.
- * @param is_impl If true, the function will use cli_i_value_t instead of cli_value_t.
  */
-static void destroy_argv_map(hashmap_t *map, const bool free_map_values, const bool is_impl)
+static void destroy_argv_map(hashmap_cli_i_t *map, const bool free_map_values)
 {
     if (!map) return;
 
     // Get an iterator for the hashmap
-    hashmap_iter_t iter = hashmap_iter_begin(map);
-    hash_entry_t* entry;
+    hashmap_cli_i_iter_t iter = hashmap_cli_i_iter_begin(map);
+    hash_cli_i_entry_t* entry;
 
     // Iterate through the hashmap entries
-    while ((entry = hashmap_iter_next(&iter)) != NULL)
+    while ((entry = hashmap_cli_i_iter_next(&iter)) != NULL)
     {
         // Get the value from the entry
-        void *value = (cli_i_value_t *)entry->value;
+        cli_i_value_t *value = entry->value;
         if (value == NULL)
         {
             continue; // Skip if the value is NULL
         }
 
-        // Handle impl cases
-        if (is_impl)
+        // Check if we have a vector
+        if (value->vec_value)
         {
-            const cli_i_value_t *cli_value = (cli_i_value_t *)value;
-            // Check if we have a vector
-            if (cli_value->vec_value)
-            {
-                // Destroy the vector and free its memory
-                vec_destroy(cli_value->vec_value, NULL);
-                free(cli_value->vec_value);
-            }
+            // Destroy the vector and free its memory
+            vec_destroy(value->vec_value, NULL);
+            free(value->vec_value);
         }
 
         // Free the value itself
@@ -565,7 +601,44 @@ static void destroy_argv_map(hashmap_t *map, const bool free_map_values, const b
         }
     }
 
-    hashmap_free(map); // Free the hashmap itself
+    hashmap_cli_i_free(map); // Free the hashmap itself
+}
+
+/**
+ * @brief Frees all memory associated with a hashmap of CLI schema values.
+ *
+ * Iterates through all entries in the given hashmap, freeing any dynamically allocated
+ * `cli_value_t` values if `free_map_values` is true. Finally, frees the hashmap itself.
+ *
+ * @param map Pointer to the hashmap to be destroyed. If NULL, the function does nothing.
+ * @param free_map_values If true, the function will free the values in the hashmap.
+ */
+static void destroy_app_map(hashmap_cli_value_t *map, const bool free_map_values)
+{
+    if (!map) return;
+
+    // Get an iterator for the hashmap
+    hashmap_cli_value_iter_t iter = hashmap_cli_value_iter_begin(map);
+    hash_cli_value_entry_t* entry;
+
+    // Iterate through the hashmap entries
+    while ((entry = hashmap_cli_value_iter_next(&iter)) != NULL)
+    {
+        // Get the value from the entry
+        cli_value_t *value = entry->value;
+        if (value == NULL)
+        {
+            continue; // Skip if the value is NULL
+        }
+
+        // Free the value itself
+        if (free_map_values)
+        {
+            free(value); // Free the cli_i_value_t structure
+        }
+    }
+
+    hashmap_cli_value_free(map); // Free the hashmap itself
 }
 
 /**
@@ -582,11 +655,11 @@ static inline void destroy_argv(argv_t *args)
     if (args)
     {
         // Free the hashmaps
-        destroy_argv_map(args->statics, TRUE, TRUE);
-        destroy_argv_map(args->strings, TRUE, TRUE);
-        destroy_argv_map(args->integers, TRUE, TRUE);
-        destroy_argv_map(args->floats, TRUE, TRUE);
-        destroy_argv_map(args->arrays, TRUE, TRUE);
+        destroy_argv_map(args->statics, TRUE);
+        destroy_argv_map(args->strings, TRUE);
+        destroy_argv_map(args->integers, TRUE);
+        destroy_argv_map(args->floats, TRUE);
+        destroy_argv_map(args->arrays, TRUE);
 
         // Free the command value if it has a vector
         if (args->command.vec_value)
@@ -615,9 +688,9 @@ static inline void cli_destroy_app(const cli_app_t *app, const bool free_map_val
     if (app)
     {
         // Free the hashmaps
-        destroy_argv_map(app->commands, free_map_values, FALSE);
-        destroy_argv_map(app->flags, free_map_values, FALSE);
-        destroy_argv_map(app->required_flags, FALSE, FALSE);
+        destroy_app_map(app->commands, free_map_values);
+        destroy_app_map(app->flags, free_map_values);
+        destroy_app_map(app->required_flags, FALSE);
     }
 }
 
