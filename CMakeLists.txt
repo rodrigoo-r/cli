@@ -45,7 +45,8 @@ add_library(cli STATIC cli.c
         value/value.h
         type/type.h
         app/app.h
-        help/generator.h)
+        help/generator.h
+        shared/str_cmp_fn.h)
 target_include_directories(cli PRIVATE ${CMAKE_BINARY_DIR}/_deps/hashmap-src)
 target_link_libraries(cli PRIVATE hashmap)
 target_include_directories(cli PRIVATE ${CMAKE_BINARY_DIR}/_deps/vector-src)
