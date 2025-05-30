@@ -51,17 +51,17 @@ extern "C"
  */
 static void write_app_values(
     string_builder_t *builder,
-    hashmap_t *map,
+    hashmap_cli_value_t *map,
     const bool is_flag,
     const size_t padding_size
 )
 {
     // Iterate over the hashmap
-    hashmap_iter_t iter = hashmap_iter_begin(map);
-    hash_entry_t *entry;
-    while ((entry = hashmap_iter_next(&iter)) != NULL)
+    hashmap_cli_value_iter_t iter = hashmap_cli_value_iter_begin(map);
+    hash_cli_value_entry_t *entry;
+    while ((entry = hashmap_cli_value_iter_next(&iter)) != NULL)
     {
-        const cli_value_t *value = (cli_value_t *)entry->value;
+        const cli_value_t *value = entry->value;
         if (value)
         {
             // Ignore non-original names
