@@ -24,11 +24,19 @@ extern "C"
 #ifndef FLUENT_LIBC_RELEASE
 #   include <hashmap.h> // fluent_libc
 #   include <vector.h> // fluent_libc
+#   include <std_bool.h> // fluent_libc
 #else
 #   include <fluent/hashmap/hashmap.h> // fluent_libc
 #   include <fluent/vector/vector.h> // fluent_libc
+#   include <fluent/std_bool/std_bool.h> // fluent_libc
 #endif
 #include "../value/value.h"
+#include "../shared/str_cmp_fn.h"
+
+#ifndef FLUENT_LIBC_CLI_HASHMAP_VALUE
+    DEFINE_HASHMAP(char *, cli_value_t *, cli_value)
+#   define FLUENT_LIBC_CLI_HASHMAP_VALUE 1
+#endif
 
 /**
  * @brief Represents the state and configuration of the CLI application.
@@ -42,11 +50,11 @@ extern "C"
  */
 typedef struct
 {
-    hashmap_t *flags; /**< Flags */
-    hashmap_t *commands; /**< Commands */
+    hashmap_cli_value_t *flags; /**< Flags */
+    hashmap_cli_value_t *commands; /**< Commands */
 
     // INTERNALS
-    hashmap_t *required_flags; /**< Flags */
+    hashmap_cli_value_t *required_flags; /**< Flags */
 } cli_app_t;
 
 /**
@@ -60,9 +68,29 @@ typedef struct
  */
 static inline bool cli_new_app(cli_app_t *app)
 {
-    app->flags = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
-    app->commands = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
-    app->required_flags = hashmap_new(15, 1.5, NULL, (hash_function_t)hash_str_key, 0);
+    app->flags = hashmap_cli_value_new(
+        15,
+        1.5,
+        NULL,
+        (hash_cli_value_function_t)hash_str_key,
+        (hash_cli_value_cmp_t)cmp_str
+    );
+
+    app->commands = hashmap_cli_value_new(
+        15,
+        1.5,
+        NULL,
+        (hash_cli_value_function_t)hash_str_key,
+        (hash_cli_value_cmp_t)cmp_str
+    );
+
+    app->required_flags = hashmap_cli_value_new(
+        15,
+        1.5,
+        NULL,
+        (hash_cli_value_function_t)hash_str_key,
+        (hash_cli_value_cmp_t)cmp_str
+    );
 
     // Handle memory allocation failure
     if (!app->flags || !app->commands)
@@ -84,14 +112,14 @@ static inline bool cli_new_app(cli_app_t *app)
  * @param name The name to search for in the flags and commands.
  * @return Non-zero if the name exists, zero otherwise.
  */
-static inline bool cli_has_value(const cli_app_t *app, const char *name)
+static inline bool cli_has_value(const cli_app_t *app, char *name)
 {
     if (app->flags && name)
     {
         // Check if the name exists in the flags or commands hashmaps
         return
-            hashmap_get(app->flags, (void *)name) != NULL
-            || hashmap_get(app->commands, (void *)name) != NULL;
+            hashmap_cli_value_get(app->flags, name) != NULL
+            || hashmap_cli_value_get(app->commands, name) != NULL;
     }
 
     return FALSE; // Invalid parameters, return false
@@ -106,7 +134,7 @@ static inline bool cli_has_value(const cli_app_t *app, const char *name)
  * @param flag_name Name of the flag to insert.
  * @param value Pointer to the value associated with the flag.
  */
-static inline bool cli_insert_flag(const cli_app_t *app, const char *flag_name, cli_value_t *value)
+static inline bool cli_insert_flag(const cli_app_t *app, char *flag_name, cli_value_t *value)
 {
     if (app && app->flags && flag_name && value)
     {
@@ -118,7 +146,7 @@ static inline bool cli_insert_flag(const cli_app_t *app, const char *flag_name, 
         }
 
         // Insert the flag into the hashmap
-        hashmap_insert(app->flags, (void *)flag_name, value);
+        hashmap_cli_value_insert(app->flags, flag_name, value);
 
         // Insert the alias if it exists
         if (value->alias)
@@ -131,13 +159,13 @@ static inline bool cli_insert_flag(const cli_app_t *app, const char *flag_name, 
             }
 
             // Insert the alias into the hashmap
-            hashmap_insert(app->flags, (void *)value->alias, value);
+            hashmap_cli_value_insert(app->flags, value->alias, value);
         }
 
         // Insert to the required map if needed
         if (value->required)
         {
-            hashmap_insert(app->required_flags, (void *)flag_name, value);
+            hashmap_cli_value_insert(app->required_flags, flag_name, value);
         }
 
         return TRUE; // Successfully inserted the flag
@@ -155,7 +183,7 @@ static inline bool cli_insert_flag(const cli_app_t *app, const char *flag_name, 
  * @param command_name Name of the command to insert.
  * @param value Pointer to the value associated with the command.
  */
-static inline bool cli_insert_command(const cli_app_t *app, const char *command_name, cli_value_t *value)
+static inline bool cli_insert_command(const cli_app_t *app, char *command_name, cli_value_t *value)
 {
     if (app && app->commands && command_name && value)
     {
@@ -167,7 +195,7 @@ static inline bool cli_insert_command(const cli_app_t *app, const char *command_
         }
 
         // Insert the command into the hashmap
-        hashmap_insert(app->commands, (void *)command_name, value);
+        hashmap_cli_value_insert(app->commands, command_name, value);
 
         // Insert the alias if it exists
         if (value->alias)
@@ -180,7 +208,7 @@ static inline bool cli_insert_command(const cli_app_t *app, const char *command_
             }
 
             // Insert the alias into the hashmap
-            hashmap_insert(app->commands, (void *)value->alias, value);
+            hashmap_cli_value_insert(app->commands, value->alias, value);
         }
 
         return TRUE; // Successfully inserted the command
