@@ -116,10 +116,12 @@ static inline bool cli_has_value(const cli_app_t *app, char *name)
 {
     if (app->flags && name)
     {
+        cli_value_t **value = hashmap_cli_value_get(app->flags, name);
+        cli_value_t **value2 = hashmap_cli_value_get(app->commands, name);
         // Check if the name exists in the flags or commands hashmaps
         return
-            hashmap_cli_value_get(app->flags, name) != NULL
-            || hashmap_cli_value_get(app->commands, name) != NULL;
+            (value != NULL && *value != NULL)
+            || (value2 != NULL && *value2 != NULL);
     }
 
     return FALSE; // Invalid parameters, return false
