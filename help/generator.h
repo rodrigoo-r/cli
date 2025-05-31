@@ -94,10 +94,14 @@ static void write_app_values(
             }
 
             // Add padding to the description
-            const char *padded = str_pad(padding_size, collect_string_builder_no_copy(&value_builder));
+            char *padded = str_pad(padding_size, collect_string_builder_no_copy(&value_builder));
 
             // Write the padded to the main builder
             write_string_builder(builder, padded);
+
+            // Since the padded string has now been copied to the main builder,
+            // we can destroy the padded string to free memory
+            free(padded);
 
             // Write the description
             write_string_builder(builder, value->description);
