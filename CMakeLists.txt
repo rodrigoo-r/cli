@@ -36,7 +36,7 @@ FetchContent_MakeAvailable(atoi)
 FetchContent_MakeAvailable(string_builder)
 FetchContent_MakeAvailable(str_pad)
 
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.12)
 project(cli C)
 
 set(CMAKE_C_STANDARD 11)
