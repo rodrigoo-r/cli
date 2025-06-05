@@ -133,13 +133,13 @@ typedef struct
 static int argv_t_process_array(
     argv_t *parsed_args,
     const cli_i_value_t *command,
-    vector_t **array_values,
+    vector_cli_t **array_values,
     int *parsing_array,
     int *waiting_value
 )
 {
     // If the flag is an array, initialize the array values vector
-    vector_t *vector = (vector_t *)malloc(sizeof(vector_t));
+    vector_cli_t *vector = (vector_cli_t *)malloc(sizeof(vector_cli_t));
 
     // Handle memory allocation failure
     if (vector == NULL)
@@ -149,7 +149,7 @@ static int argv_t_process_array(
         return 0;
     }
 
-    vec_init(vector, 10, sizeof(char *), 1.5); // Initialize vector with capacity of 10
+    vec_cli_init(vector, 10, 1.5); // Initialize vector with capacity of 10
 
     *array_values = vector; // Assign the vector to array_values
     *parsing_array = 1; // Set parsing array flag
@@ -244,7 +244,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
     int waiting_value = 0;
     int parsing_command = 0;
     int parsing_array = 0;
-    vector_t *array_values = NULL;
+    vector_cli_t *array_values = NULL;
     cli_type_t last_type = CLI_TYPE_STATIC; // Initialize last type to static
     cli_type_t command_type = CLI_TYPE_STATIC;
     const char *flag_name = NULL;
@@ -366,7 +366,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
             if (parsing_array)
             {
                 // Consider the arg to be a value
-                vec_push(array_values, (void *)arg);
+                vec_cli_push(array_values, (char *)arg);
                 continue;
             }
 
@@ -436,7 +436,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                 case CLI_TYPE_ARRAY:
                 {
                     // Add the value to the array values vector
-                    vec_push(array_values, (void *)arg);
+                    vec_cli_push(array_values, (char *)arg);
                     break;
                 }
 
@@ -590,7 +590,7 @@ static void destroy_argv_map(hashmap_cli_i_t *map, const bool free_map_values)
         if (value->vec_value)
         {
             // Destroy the vector and free its memory
-            vec_destroy(value->vec_value, NULL);
+            vec_cli_destroy(value->vec_value, NULL);
             free(value->vec_value);
         }
 
@@ -664,7 +664,7 @@ static inline void destroy_argv(argv_t *args)
         // Free the command value if it has a vector
         if (args->command.vec_value)
         {
-            vec_destroy(args->command.vec_value, NULL);
+            vec_cli_destroy(args->command.vec_value, NULL);
             free(args->command.vec_value);
         }
 
