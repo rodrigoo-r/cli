@@ -30,6 +30,11 @@ extern "C"
 #endif
 #include "../type/type.h"
 
+#ifndef FLUENT_LIBC_CLI_VECTOR_DEFINED
+#    define FLUENT_LIBC_CLI_VECTOR_DEFINED 1
+    DEFINE_VECTOR(char *, cli);
+#endif
+
 /**
  * @struct cli_value_t
  * @brief Represents a command-line flag or command.
@@ -68,10 +73,10 @@ typedef struct
  */
 typedef struct
 {
-    const char *value;     /**< Pointer to the value of the command (might be NULL) */
-    vector_t *vec_value;   /**< Vector of values for array flags/command (might be NULL) */
-    long num_val;          /**< Value for integer flags/commands (might be 0) */
-    float float_val;       /**< Value for float flags/commands (might be 0.0) */
+    const char *value;         /**< Pointer to the value of the command (might be NULL) */
+    vector_cli_t *vec_value;   /**< Vector of values for array flags/command (might be NULL) */
+    long num_val;              /**< Value for integer flags/commands (might be 0) */
+    float float_val;           /**< Value for float flags/commands (might be 0.0) */
 } cli_i_value_t;
 
 /**
