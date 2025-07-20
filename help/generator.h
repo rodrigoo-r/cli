@@ -22,7 +22,7 @@
 // ============= FLUENT LIB C++ =============
 #if defined(__cplusplus)
 extern "C"
-}
+{
 #endif
 
 #ifndef FLUENT_LIBC_RELEASE
