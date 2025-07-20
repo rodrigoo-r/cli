@@ -248,7 +248,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
     cli_type_t last_type = CLI_TYPE_STATIC; // Initialize last type to static
     cli_type_t command_type = CLI_TYPE_STATIC;
     const char *flag_name = NULL;
-    const char *command_name = NULL;
+    char *command_name = NULL;
 
     // Iterate through the command-line arguments
     for (int i = 1; i < argc; i++)
@@ -347,7 +347,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                 waiting_value = 0; // Reset waiting value flag
 
                 // Insert the static flag into the statics hashmap
-                hashmap_cli_i_insert(parsed_args.statics, (char *)flag_name, (void *)1);
+                hashmap_cli_i_insert(parsed_args.statics, (char *)flag_name, (cli_i_value_t *)1);
             }
 
             // Handle other types of flags
@@ -383,7 +383,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                 // Allocate memory for the value if needed
                 if (parse_type != CLI_TYPE_STATIC)
                 {
-                    value = malloc(sizeof(cli_i_value_t)); // Allocate memory for the value
+                    value = (cli_i_value_t *)malloc(sizeof(cli_i_value_t)); // Allocate memory for the value
 
                     // Handle memory allocation failure
                     if (value == NULL)
@@ -412,7 +412,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                     {
                         value->num_val = int_value; // Set the integer value for the flag
                         // Insert the integer value into the integers hashmap
-                        hashmap_cli_i_insert(parsed_args.integers, (void *)command_name, (void *)value);
+                        hashmap_cli_i_insert(parsed_args.integers, command_name, value);
                     }
                     break;
                 }
@@ -429,7 +429,7 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                     }
 
                     // Insert the static flag into the statics hashmap
-                    hashmap_cli_i_insert(parsed_args.statics, (char *)command_name, (void *)1);
+                    hashmap_cli_i_insert(parsed_args.statics, command_name, (cli_i_value_t *)1);
                     break;
                 }
 
@@ -492,10 +492,10 @@ static inline argv_t parse_argv(const int argc, const char **argv, cli_app_t *ap
                 return parsed_args;
             }
 
-            command_name = arg; // Set the command name to the current argument
+            command_name = (char *)arg; // Set the command name to the current argument
 
             // Get the command from the commands map
-            cli_value_t **command_value_ptr = hashmap_cli_value_get(app->commands, (void *)command_name);
+            cli_value_t **command_value_ptr = hashmap_cli_value_get(app->commands, command_name);
 
             // Check if the command exists
             if (command_value_ptr == NULL)
